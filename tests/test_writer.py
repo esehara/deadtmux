@@ -126,3 +126,22 @@ def test_pane_manager_process_writer():
         'select-pane',
             'alias', 'work', '=']:
         assert result.index(include_string)
+
+
+def test_pane_manager_prefix():
+    test_pane_manager = writer.PaneManager(
+        [
+            {
+                'configure': {
+                    'run': 'byobu',
+                    'focus-pane': 1}},
+            {
+                'split-window': 'horizon',
+                'send-keys': ['chrome-browser']}])
+
+    result = test_pane_manager.header_write()
+    result += test_pane_manager.footer_write()
+
+    for include_string in [
+            'byobu', 'select-pane', 'detach']:
+        result.index(include_string)

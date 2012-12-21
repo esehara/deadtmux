@@ -9,6 +9,7 @@ class PaneManager(object):
 
     panes = []
     global_pane = None
+    configure = None
 
     def __init__(self, ars):
         no = 0
@@ -17,9 +18,27 @@ class PaneManager(object):
                     ar['is_global']):
                 self.global_pane = Pane(ar)
                 continue
+
+            if ('configure' in ar):
+                self.configure = ar['configure']
+                continue
+
             ar['no'] = no
             self.panes.append(Pane(ar))
             no += 1
+
+    def header_write(self):
+        return_string = ""
+        return_string += "%s & \n" % self.configure['run']
+        return_string += "sleep 1 \n"
+        return return_string
+
+    def footer_write(self):
+        return_string = ""
+        return_string += "tmux select-pane -t %d" % self.configure['focus-pane']
+        return_string += "tmux detach \n"
+        return_string += "%s\n" % self.configure['run']
+        return return_string
 
     def init_write(self):
         return_string = ""
@@ -42,6 +61,7 @@ class PaneManager(object):
                 global_write)
 
         return return_string
+
 
 class Pane(object):
 
