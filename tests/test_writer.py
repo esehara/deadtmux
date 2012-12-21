@@ -13,7 +13,7 @@ def test_write_pane():
 
 def test_split_window():
     test_pane = writer.Pane({
-        'no': 0,
+        'no': 1,
         'split-window': 'horizon'})
     result = test_pane.init_write()
 
@@ -48,6 +48,17 @@ def test_sendkeys():
         assert result.index(include_string)
 
 
+def test_global_pane():
+    test_pane = writer.Pane({
+        'is_global': True,
+        'send-keys': ['chrome-browser']})
+    result = test_pane.prosess_write()
+
+    for include_string in [
+            'send-keys', 'chrome-browser']:
+        print include_string
+        assert result.index(include_string)
+
 def test_alias():
     test_pane = writer.Pane({
         'no': 0,
@@ -73,3 +84,31 @@ def test_pane_manager_init():
 
     assert len(test_pane_manager.panes) == 2
 
+
+def test_pane_manager_init_writer():
+    test_pane_manager = writer.PaneManager(
+        [{'split-window': 'horizon'},
+         {'split-window': 'vertical'}])
+
+    result = test_pane_manager.init_write()
+
+    for include_string in ['-v', ]:
+        assert result.index(include_string)
+
+
+def test_pane_manager_prosess_writer():
+    test_pane_manager = writer.PaneManager(
+        [
+            {
+                'split-window': 'horizon',
+                'send-keys': ['chrome-browser']},
+            {
+                'split-window': 'vertical',
+                'alias': {'work': 'cat hoge.txt'}}])
+
+    result = test_pane_manager.prosess_write()
+
+    for include_string in [
+        'select-pane',
+            'alias', 'work', '=']:
+        assert result.index(include_string)

@@ -1,18 +1,47 @@
 # -*- coding: utf-8 -*-
 from util import debug_print
+import yaml
+
 debug = False
 
 
 class PaneManager(object):
 
     panes = []
+    global_pane = None
 
     def __init__(self, ars):
-
-        for num, ar in enumerate(ars):
-            ar['no'] = num
+        no = 0
+        for ar in ars:
+            if ('is_global' in ar and
+                    ar['is_global']):
+                self.global_pane = Pane(ar)
+                continue
+            ar['no'] = no
             self.panes.append(Pane(ar))
+            no += 1
 
+    def init_write(self):
+        return_string = ""
+
+        for pane in self.panes:
+            return_string += pane.init_write()
+
+        return return_string
+
+    def prosess_write(self):
+        return_string = ""
+
+        for pane in self.panes:
+            global_write = None
+
+            if not self.global_pane is None:
+                global_write = self.global_pane.prosess_write()
+
+            return_string += pane.prosess_write(
+                global_write)
+
+        return return_string
 
 class Pane(object):
 
@@ -21,7 +50,15 @@ class Pane(object):
     is_global = False
 
     def __init__(self, d):
-        self.num = d['no']
+
+        if not ('is_global' in d and
+                d['is_global']):
+            self.num = d['no']
+            if self.num != 0:
+                self.split_window = d['split-window']
+ 
+        else:
+            self.is_global = True
 
         if 'send-keys' in d:
             self.sendkeys = d['send-keys']
@@ -29,22 +66,25 @@ class Pane(object):
         if 'alias' in d:
             self.alias = d['alias']
 
-        self.split_window = d['split-window']
-
     def init_write(self):
         return_string = ""
+        if self.num != 0:
+            if self.split_window == "horizon":
+                return_string += "tmux split-window -h"
 
-        if self.split_window == "horizon":
-            return_string += "tmux split-window -h"
-
-        if self.split_window == "vertical":
-            return_string += "tmux split-window -v"
+            if self.split_window == "vertical":
+                return_string += "tmux split-window -v"
 
         return return_string + "\n"
 
-    def prosess_write(self):
+    def prosess_write(self, global_write=None):
         return_string = ""
-        return_string += "tmux select-pane -t %d \n" % self.num
+
+        if not self.is_global:
+            return_string += "tmux select-pane -t %d \n" % self.num
+
+            if global_write is not None:
+                return_string += global_write
 
         if not self.alias is None:
             return_string += self._generate_alias()
@@ -55,7 +95,7 @@ class Pane(object):
         return return_string
 
     def __sendkeys_string(self, string):
-        return "tmux send-keys '%s' enter \n" % string
+        return "tmux send-keys '%s' enter" % string
 
     def _generate_sendkeys(self):
         return_string = ""
@@ -68,14 +108,17 @@ class Pane(object):
 
     def _generate_alias(self):
         return_string = ""
-
         for key, value in self.alias.items():
             return_string += self.__sendkeys_string(
-                '"alias %s=\'%s\'"' % (key, value))
+                'alias %s="%s"' % (key, value))
             return_string += "\n"
 
         return return_string
 
 if __name__ == "__main__":
-    global debug
     debug = True
+    test_yaml = yaml.load(open('deadtmux/testyaml.yaml').read())
+    panes = PaneManager(test_yaml)
+    
+    print panes.init_write()
+    print panes.prosess_write()
