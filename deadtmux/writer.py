@@ -29,16 +29,16 @@ class PaneManager(object):
 
         return return_string
 
-    def prosess_write(self):
+    def process_write(self):
         return_string = ""
 
         for pane in self.panes:
             global_write = None
 
             if not self.global_pane is None:
-                global_write = self.global_pane.prosess_write()
+                global_write = self.global_pane.process_write()
 
-            return_string += pane.prosess_write(
+            return_string += pane.process_write(
                 global_write)
 
         return return_string
@@ -77,7 +77,7 @@ class Pane(object):
 
         return return_string + "\n"
 
-    def prosess_write(self, global_write=None):
+    def process_write(self, global_write=None):
         return_string = ""
 
         if not self.is_global:
@@ -121,4 +121,4 @@ if __name__ == "__main__":
     panes = PaneManager(test_yaml)
     
     print panes.init_write()
-    print panes.prosess_write()
+    print panes.process_write()

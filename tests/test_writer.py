@@ -6,7 +6,7 @@ def test_write_pane():
     test_pane = writer.Pane({
         'no': 0,
         'split-window': 'horizon'})
-    result = test_pane.prosess_write()
+    result = test_pane.process_write()
     assert result.index('select-pane')
     assert result.index('0')
 
@@ -38,7 +38,7 @@ def test_sendkeys():
         'send-keys': [
             'chronium-browser',
             'cd /home/esehara/hogehoge/']})
-    result = test_pane.prosess_write()
+    result = test_pane.process_write()
 
     for include_string in [
         'chronium-browser',
@@ -52,7 +52,7 @@ def test_global_pane():
     test_pane = writer.Pane({
         'is_global': True,
         'send-keys': ['chrome-browser']})
-    result = test_pane.prosess_write()
+    result = test_pane.process_write()
 
     for include_string in [
             'send-keys', 'chrome-browser']:
@@ -66,7 +66,7 @@ def test_alias():
         'alias': {
             'work': 'cat hoge.txt'}})
 
-    result = test_pane.prosess_write()
+    result = test_pane.process_write()
 
     for include_string in [
         'send-keys',
@@ -74,6 +74,19 @@ def test_alias():
         'work',
             'hoge.txt']:
 
+        assert result.index(include_string)
+
+
+def test_exports():
+
+    test_pane = writer.Pane({
+        'no': 0,
+        'exports': {'hoge': 'fuga'}})
+
+    result = test_pane.process_write()
+
+    for include_string in [
+            'exports', 'hoge', '=', 'fuga']:
         assert result.index(include_string)
 
 
@@ -96,7 +109,7 @@ def test_pane_manager_init_writer():
         assert result.index(include_string)
 
 
-def test_pane_manager_prosess_writer():
+def test_pane_manager_process_writer():
     test_pane_manager = writer.PaneManager(
         [
             {
@@ -106,7 +119,7 @@ def test_pane_manager_prosess_writer():
                 'split-window': 'vertical',
                 'alias': {'work': 'cat hoge.txt'}}])
 
-    result = test_pane_manager.prosess_write()
+    result = test_pane_manager.process_write()
 
     for include_string in [
         'select-pane',
