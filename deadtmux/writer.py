@@ -47,6 +47,7 @@ class Pane(object):
 
     sendkeys = None
     alias = None
+    export = None
     is_global = False
 
     def __init__(self, d):
@@ -56,7 +57,6 @@ class Pane(object):
             self.num = d['no']
             if self.num != 0:
                 self.split_window = d['split-window']
- 
         else:
             self.is_global = True
 
@@ -65,6 +65,9 @@ class Pane(object):
 
         if 'alias' in d:
             self.alias = d['alias']
+
+        if 'export' in d:
+            self.export = d['export']
 
     def init_write(self):
         return_string = ""
@@ -85,6 +88,9 @@ class Pane(object):
 
             if global_write is not None:
                 return_string += global_write
+
+        if self.export is not None:
+            return_string += self._generate_export()
 
         if not self.alias is None:
             return_string += self._generate_alias()
@@ -113,6 +119,14 @@ class Pane(object):
                 'alias %s="%s"' % (key, value))
             return_string += "\n"
 
+        return return_string
+
+    def _generate_export(self):
+        return_string = ""
+        for key, value in self.export.items():
+            return_string += self.__sendkeys_string(
+                'export %s="%s"' % (key, value))
+            return_string += "\n"
         return return_string
 
 if __name__ == "__main__":

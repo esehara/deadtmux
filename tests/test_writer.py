@@ -77,16 +77,17 @@ def test_alias():
         assert result.index(include_string)
 
 
-def test_exports():
+def test_export():
 
     test_pane = writer.Pane({
         'no': 0,
-        'exports': {'hoge': 'fuga'}})
+        'export': {'hoge': 'fuga'}})
 
     result = test_pane.process_write()
+    print result
 
     for include_string in [
-            'exports', 'hoge', '=', 'fuga']:
+            'export', 'hoge', '=', 'fuga']:
         assert result.index(include_string)
 
 
