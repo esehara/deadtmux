@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-from util import debug_print
-
 import yaml
 import re
 import os
-
 
 debug = False
 
@@ -39,7 +36,8 @@ class PaneManager(object):
 
     def footer_write(self):
         return_string = ""
-        return_string += "tmux select-pane -t %d \n" % self.configure['focus-pane']
+        return_string += "tmux select-pane -t %d \n" % self.configure[
+            'focus-pane']
         return_string += "tmux detach \n"
         return_string += "%s\n" % self.configure['run']
         return return_string
@@ -64,6 +62,14 @@ class PaneManager(object):
             return_string += pane.process_write(
                 global_write)
 
+        return return_string
+
+    def output(self):
+        return_string = ""
+        return_string += self.header_write()
+        return_string += self.init_write()
+        return_string += self.process_write()
+        return_string += self.footer_write()
         return return_string
 
 
@@ -104,7 +110,6 @@ class Pane(object):
 
         if 'tmux' in d:
             self.tmux = d['tmux']
-
 
     def _workspace_parser(self, d_workspace):
         abs_path = re.compile('^/')
@@ -217,6 +222,7 @@ class Pane(object):
             return_string += "tmux %s \n" % tmux
 
         return return_string
+
 
 if __name__ == "__main__":
     debug = True
