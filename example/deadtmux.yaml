@@ -3,7 +3,7 @@
     focus-pane: 1
 
 - is_global: True
-  workdirs:
+  workspace:
      root: /home/esehara/Python/Tools/deadtmux/
      test: tests
      source: deadtmux
