@@ -91,6 +91,22 @@ def test_export():
         assert result.index(include_string)
 
 
+def test_workspace():
+    test_pane = writer.Pane({
+        'no': 0,
+        'workspace': {
+            'root': '/home/hoge/', 'test': 'test', 'source': '/home/source/'}})
+    assert test_pane.workspace['root'] == '/home/hoge/'
+    assert test_pane.workspace['test'] == '/home/hoge/test'
+    assert test_pane.workspace['source'] == '/home/source/'
+
+    result = test_pane.process_write()
+
+    for include_string in [
+            'go-root', 'go-test', 'go-source']:
+        assert result.index(include_string)
+
+
 def test_pane_manager_init():
     test_pane_manager = writer.PaneManager(
         [{'split-window': 'horizon'},
@@ -114,7 +130,6 @@ def test_pane_manager_process_writer():
     test_pane_manager = writer.PaneManager(
         [
             {
-                'split-window': 'horizon',
                 'send-keys': ['chrome-browser']},
             {
                 'split-window': 'vertical',

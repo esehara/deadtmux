@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from util import debug_print
+
 import yaml
+import re
+import os
+
 
 debug = False
 
@@ -30,12 +34,12 @@ class PaneManager(object):
     def header_write(self):
         return_string = ""
         return_string += "%s & \n" % self.configure['run']
-        return_string += "sleep 1 \n"
+        return_string += "sleep 1"
         return return_string
 
     def footer_write(self):
         return_string = ""
-        return_string += "tmux select-pane -t %d" % self.configure['focus-pane']
+        return_string += "tmux select-pane -t %d \n" % self.configure['focus-pane']
         return_string += "tmux detach \n"
         return_string += "%s\n" % self.configure['run']
         return return_string
@@ -68,6 +72,7 @@ class Pane(object):
     sendkeys = None
     alias = None
     export = None
+    workspace = None
     is_global = False
 
     def __init__(self, d):
@@ -89,6 +94,20 @@ class Pane(object):
         if 'export' in d:
             self.export = d['export']
 
+        if 'workspace' in d:
+            self.workspace = self._workspace_parser(
+                d['workspace'])
+
+    def _workspace_parser(self, d_workspace):
+        abs_path = re.compile('^/')
+        for key, value in d_workspace.items():
+            if key == 'root':
+                continue
+            if not abs_path.match(d_workspace[key]):
+                d_workspace[key] = os.path.join(
+                    d_workspace['root'], d_workspace[key])
+        return d_workspace
+
     def init_write(self):
         return_string = ""
         if self.num != 0:
@@ -108,6 +127,9 @@ class Pane(object):
 
             if global_write is not None:
                 return_string += global_write
+
+        if self.workspace is not None:
+            return_string += self._generate_workspace()
 
         if self.export is not None:
             return_string += self._generate_export()
@@ -135,11 +157,14 @@ class Pane(object):
     def _generate_alias(self):
         return_string = ""
         for key, value in self.alias.items():
-            return_string += self.__sendkeys_string(
-                'alias %s="%s"' % (key, value))
+            return_string += self.__alias_string(key, value)
             return_string += "\n"
 
         return return_string
+
+    def __alias_string(self, key, value):
+        return self.__sendkeys_string(
+            'alias %s="%s"' % (key, value))
 
     def _generate_export(self):
         return_string = ""
@@ -149,10 +174,24 @@ class Pane(object):
             return_string += "\n"
         return return_string
 
+    def _generate_workspace(self):
+        return_string = ""
+
+        for key, value in self.workspace.items():
+            alias_key = 'go-' + key
+            alias_path = "cd " + value
+            return_string += self.__alias_string(
+                alias_key, alias_path)
+            return_string += "\n"
+
+        return return_string
+
 if __name__ == "__main__":
     debug = True
-    test_yaml = yaml.load(open('deadtmux/testyaml.yaml').read())
+    test_yaml = yaml.load(open('example/deadtmux.yaml').read())
     panes = PaneManager(test_yaml)
-    
+
+    print panes.header_write()
     print panes.init_write()
     print panes.process_write()
+    print panes.footer_write()
