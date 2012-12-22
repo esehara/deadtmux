@@ -1,0 +1,22 @@
+- configure:
+    run: byobu
+    focus-pane: 1
+
+- is_global: True
+  workdirs:
+     root: /home/esehara/Python/Tools/deadtmux/
+     test: tests
+     source: deadtmux
+
+- send-keys:
+    - go-root
+    - watchr testrunner.rb
+
+- split-window: vertical
+  send-keys:
+    - go-source
+
+- split-window: horizon
+  send-keys:
+    - go-test
+    - vim .
