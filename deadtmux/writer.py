@@ -19,6 +19,11 @@ class WindowManager(object):
 
             if 'configure' in window:
                 self.configure = window['configure']
+
+                if ('new-window' in window and
+                        window['new-window']):
+                    no = 1
+
                 continue
 
             if ('is_global' in window and
