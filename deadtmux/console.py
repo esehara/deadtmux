@@ -9,7 +9,7 @@ def write(args):
 
     yamlfile = open(args.input)
     conf = yaml.load(yamlfile.read())
-    manager = writer.PaneManager(conf)
+    manager = writer.WindowManager(conf)
     build_string = manager.output()
 
     if args.debug:
@@ -18,6 +18,7 @@ def write(args):
         f = open(args.output, "w")
         f.write(build_string)
         f.close()
+
 
 def input_filepath(string):
     if not os.path.isfile(string):

@@ -6,41 +6,87 @@ import os
 debug = False
 
 
-class PaneManager(object):
+class WindowManager(object):
 
-    panes = []
     global_pane = None
-    configure = None
 
-    def __init__(self, ars):
+    def __init__(self, args):
+
+        self.window = []
+
         no = 0
-        for ar in ars:
-            if ('is_global' in ar and
-                    ar['is_global']):
-                self.global_pane = Pane(ar)
+        for window in args:
+
+            if 'configure' in window:
+                self.configure = window['configure']
                 continue
 
-            if ('configure' in ar):
-                self.configure = ar['configure']
+            if ('is_global' in window and
+                    window['is_global']):
+                self.global_pane = Pane(window)
                 continue
 
-            ar['no'] = no
-            self.panes.append(Pane(ar))
+            self.window.append(
+                PaneManager(window['window'], no))
             no += 1
+
+    def output(self):
+        result_string = ""
+        result_string += self.header_write()
+
+        for window in self.window:
+            global_string = None
+
+            if self.global_pane is not None:
+                global_string = self.global_pane.process_write()
+
+            result_string += window.output(global_string)
+
+        result_string += self.footer_write()
+        return result_string
 
     def header_write(self):
         return_string = ""
         return_string += "%s & \n" % self.configure['run']
-        return_string += "sleep 1"
+        return_string += "sleep 1 \n"
         return return_string
 
     def footer_write(self):
         return_string = ""
+        return_string += "tmux select-window -t %s \n" % self.configure[
+            'focus-window']
         return_string += "tmux select-pane -t %d \n" % self.configure[
             'focus-pane']
         return_string += "tmux detach \n"
         return_string += "%s\n" % self.configure['run']
         return return_string
+
+
+class PaneManager(object):
+
+    panes = None
+    no = 0
+    name = None
+    global_pane = None
+    configure = None
+
+    def __init__(self, ars, window_no=0):
+
+        self.panes = []
+        self.no = window_no
+        no = 0
+
+        self.name = ars['name']
+
+        for ar in ars['panes']:
+            if ('is_global' in ar and
+                    ar['is_global']):
+                self.global_pane = Pane(ar)
+                continue
+
+            ar['no'] = no
+            self.panes.append(Pane(ar))
+            no += 1
 
     def init_write(self):
         return_string = ""
@@ -50,26 +96,39 @@ class PaneManager(object):
 
         return return_string
 
-    def process_write(self):
+    def process_write(self, global_string=None):
         return_string = ""
-
         for pane in self.panes:
-            global_write = None
+            global_write = ""
 
-            if not self.global_pane is None:
-                global_write = self.global_pane.process_write()
+            if global_string is not None:
+                global_write += global_string
+
+            if self.global_pane is not None:
+                global_write += self.global_pane.process_write()
+
+            if global_write == "":
+                global_write = None
 
             return_string += pane.process_write(
                 global_write)
+        return return_string
+
+    def header_write(self):
+        return_string = ""
+
+        if self.no != 0:
+            return_string += 'tmux new-window -n %s' % self.name
+        else:
+            return_string += 'tmux rename-window %s' % self.name
 
         return return_string
 
-    def output(self):
+    def output(self, global_string=None):
         return_string = ""
         return_string += self.header_write()
         return_string += self.init_write()
-        return_string += self.process_write()
-        return_string += self.footer_write()
+        return_string += self.process_write(global_string)
         return return_string
 
 
@@ -227,7 +286,7 @@ class Pane(object):
 if __name__ == "__main__":
     debug = True
     test_yaml = yaml.load(open('example/deadtmux.yaml').read())
-    panes = PaneManager(test_yaml)
+    panes = WindowManager(test_yaml)
 
     print panes.header_write()
     print panes.init_write()

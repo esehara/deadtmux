@@ -1,5 +1,6 @@
 - configure:
     run: byobu
+    focus-window: workspace
     focus-pane: 1
 
 - is_global: True
@@ -8,17 +9,26 @@
      test: tests
      source: deadtmux
 
-- send-keys:
-    - go-root
-    - watchr testrunner.rb
-  resize:
-    up: 5
+- window:
+    name: workspace
+    panes:
+      - send-keys:
+          - go-root
+          - watchr testrunner.rb
+        resize:
+          up: 10
 
-- split-window: vertical
-  send-keys:
-    - go-source
+      - split-window: vertical
+        send-keys:
+          - go-source
 
-- split-window: horizon
-  send-keys:
-    - go-test
-    - vim .
+      - split-window: horizon
+        send-keys:
+          - go-test
+          - vim .
+
+- window:
+    name: sandbox
+    panes:
+      - send-keys:
+        - go-root

@@ -122,16 +122,22 @@ def test_resize():
 
 def test_pane_manager_init():
     test_pane_manager = writer.PaneManager(
-        [{'split-window': 'horizon'},
-         {'split-window': 'vertical'}])
+        {
+            "name": "foobar",
+            "panes":
+                [{'split-window': 'horizon'},
+                {'split-window': 'vertical'}]})
 
     assert len(test_pane_manager.panes) == 2
 
 
 def test_pane_manager_init_writer():
     test_pane_manager = writer.PaneManager(
-        [{'split-window': 'horizon'},
-         {'split-window': 'vertical'}])
+        {
+            'name': 'foobar',
+            'panes':
+                [{'split-window': 'horizon'},
+                {'split-window': 'vertical'}]})
 
     result = test_pane_manager.init_write()
 
@@ -141,12 +147,14 @@ def test_pane_manager_init_writer():
 
 def test_pane_manager_process_writer():
     test_pane_manager = writer.PaneManager(
-        [
-            {
-                'send-keys': ['chrome-browser']},
-            {
-                'split-window': 'vertical',
-                'alias': {'work': 'cat hoge.txt'}}])
+        {
+            "name": 'foobar',
+            "panes": [
+                {
+                    'send-keys': ['chrome-browser']},
+                {
+                    'split-window': 'vertical',
+                    'alias': {'work': 'cat hoge.txt'}}]})
 
     result = test_pane_manager.process_write()
 
@@ -156,20 +164,58 @@ def test_pane_manager_process_writer():
         assert result.index(include_string)
 
 
-def test_pane_manager_prefix():
+def test_window_setting():
     test_pane_manager = writer.PaneManager(
+        {"name": "foobar",
+            "panes": [
+                {"send-keys":
+                    ['chorium-browser']}]})
+
+    result = test_pane_manager.header_write()
+
+
+def test_window_manager_prefix():
+    test_pane_manager = writer.WindowManager(
         [
             {
                 'configure': {
                     'run': 'byobu',
-                    'focus-pane': 1}},
+                    'focus-pane': 1,
+                    'focus-window': 'foobar'}},
             {
-                'split-window': 'horizon',
-                'send-keys': ['chrome-browser']}])
+                'window': {
+                    'name': 'foobar',
+                    'panes': [
+                        {'send-keys':
+                            ['chronium-browser']}]}}])
 
     result = test_pane_manager.header_write()
     result += test_pane_manager.footer_write()
 
     for include_string in [
             'byobu', 'select-pane', 'detach']:
+        result.index(include_string)
+
+
+def test_window_manager():
+    test_window_manager = writer.WindowManager(
+        [
+            {'configure':
+                {'run': 'byobu',
+                 'focus-window': 'hogehoge',
+                 'focus-pane': 0}},
+            {'window':
+                {
+                    'name': 'hogehoge',
+                    'panes': [
+                        {'send-keys': ['chrome-browser']}]}},
+            {'window':
+                {
+                    'name': 'fugafuga',
+                    'panes': [
+                        {'send-keys': ['chrome-browser']}]}}, ])
+
+    result = test_window_manager.output()
+    for include_string in [
+            'rename-window', 'new-window', '-t']:
         result.index(include_string)
