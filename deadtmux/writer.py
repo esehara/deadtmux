@@ -52,7 +52,10 @@ class WindowManager(object):
 
     def header_write(self):
         return_string = ""
-        return_string += "%s & \n" % self.configure['run']
+
+        if 'run' in self.configure:
+            return_string += "%s & \n" % self.configure['run']
+        
         return_string += "sleep 1 \n"
         return return_string
 
@@ -62,8 +65,10 @@ class WindowManager(object):
             'focus-window']
         return_string += "tmux select-pane -t %d \n" % self.configure[
             'focus-pane']
-        return_string += "tmux detach \n"
-        return_string += "%s\n" % self.configure['run']
+
+        if 'run' in self.configure:
+            return_string += "tmux detach \n"
+            return_string += "%s\n" % self.configure['run']
         return return_string
 
 
