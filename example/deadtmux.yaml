@@ -1,5 +1,6 @@
 - configure:
     run: byobu
+    new-window: True
     focus-window: workspace
     focus-pane: 1
 
