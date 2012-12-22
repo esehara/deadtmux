@@ -107,6 +107,19 @@ def test_workspace():
         assert result.index(include_string)
 
 
+def test_resize():
+    test_pane = writer.Pane({
+        'no': 0,
+        'resize': {
+            'up': 10,
+            'left': 20}})
+
+    result = test_pane.process_write()
+
+    for include_string in [
+            'resize-pane', '-U', '-L']:
+        assert result.index(include_string)
+
 def test_pane_manager_init():
     test_pane_manager = writer.PaneManager(
         [{'split-window': 'horizon'},

@@ -11,6 +11,8 @@
 - send-keys:
     - go-root
     - watchr testrunner.rb
+  resize:
+    up: 5
 
 - split-window: vertical
   send-keys:

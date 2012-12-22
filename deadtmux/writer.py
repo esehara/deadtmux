@@ -73,6 +73,7 @@ class Pane(object):
     alias = None
     export = None
     workspace = None
+    resize = None
     is_global = False
 
     def __init__(self, d):
@@ -97,6 +98,13 @@ class Pane(object):
         if 'workspace' in d:
             self.workspace = self._workspace_parser(
                 d['workspace'])
+
+        if 'resize' in d:
+            self.resize = d['resize']
+
+        if 'tmux' in d:
+            self.tmux = d['tmux']
+
 
     def _workspace_parser(self, d_workspace):
         abs_path = re.compile('^/')
@@ -127,6 +135,9 @@ class Pane(object):
 
             if global_write is not None:
                 return_string += global_write
+
+        if self.resize is not None:
+            return_string += self._generate_resize()
 
         if self.workspace is not None:
             return_string += self._generate_workspace()
@@ -183,6 +194,27 @@ class Pane(object):
             return_string += self.__alias_string(
                 alias_key, alias_path)
             return_string += "\n"
+        return return_string
+
+    def _generate_resize(self):
+        return_string = ""
+        option_parser = {
+            'up': '-U',
+            'down': '-D',
+            'left': '-L',
+            'right': '-R'}
+
+        for key, value in self.resize.items():
+            return_string += "tmux resize-pane %s %d \n" % (
+                option_parser[key], value)
+
+        return return_string
+
+    def _generate_tmux(self):
+        return_string = ""
+
+        for tmux in self.tmux:
+            return_string += "tmux %s \n" % tmux
 
         return return_string
 
